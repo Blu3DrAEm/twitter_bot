@@ -138,7 +138,7 @@ with open('tweet.txt', "w",encoding='utf-8') as f:
     \nTotal deaths for:\nNorth America: '+str(tweet_data["North America"]["total_deaths"])+'\
     \nTotal recovered:\nNorth America: '+str(tweet_data["North America"]["total_recovered"])+'\
     \n\nGrowth factor: '+str(tweet_data["Gf"])+'\
-    \n\n#quarentineandchill \n#Blu3DrÆm')
+    \n\n#quarantineandchill \n#Blu3DrÆm')
 
 with open('tweet.txt', 'r') as f:
     api.update_status(f.read())
