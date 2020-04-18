@@ -1,0 +1,147 @@
+# twitter_bot webscraper
+# Coronavirus stats
+# Thanks Adriaan Van Niekerk via YouTube
+# Also thanks to google, stackoverflow, and the other forum homies.
+# Josh Anderson 4/17/2020
+
+import requests  # used to copy html from webpage
+import pandas
+import datetime
+import tweepy
+
+# Set up and insert your own Twitter APIs, available at https://developer.twitter.com/en/apps
+consumer_key = '...'
+consumer_secret = '...'
+access_token = '...'
+access_token_secret = '...'
+
+def OAuth():
+    try:
+        auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+        auth.set_access_token(access_token, access_token_secret)
+        return auth
+    except Exception as e:
+        return None
+
+oauth = OAuth()
+api = tweepy.API(oauth)
+
+URL = 'https://www.worldometers.info/coronavirus/#counrtries'
+page = requests.get(URL)
+print(page)
+
+from bs4 import BeautifulSoup
+soup = BeautifulSoup(page.content, "html.parser")
+print(soup)
+
+results = soup.find(id='main_table_countries_today')
+print(results)
+
+content = results.find_all('td')
+print(content)
+
+for entries in content:
+    print(entries.text.strip())
+
+countries = []
+total_cases = []
+new_cases = []
+total_deaths = []
+new_deaths = []
+total_recovered = []
+active_cases = []
+critical = []
+total_per_mil_pop = []
+
+i = 1
+for data in content:
+    if i%10 == 1:
+        countries.append(data.text.strip())
+    if i%10 == 2:
+        total_cases.append(data.text.strip())
+    if i%10 == 3:
+        new_cases.append(data.text.strip())
+    if i%10 == 4:
+        total_deaths.append(data.text.strip())
+    if i%10 == 5:
+        new_deaths.append(data.text.strip())
+    if i%10 == 6:
+        total_recovered.append(data.text.strip())
+    if i%10 == 7:
+        active_cases.append(data.text.strip())
+    if i%10 == 8:
+        critical.append(data.text.strip())
+    if i%10 == 0:
+        total_per_mil_pop.append(data.text.strip())
+    i += 1
+
+column_name = ["Country", "Total Cases", "New Cases", "Total Deaths", "New Deaths", "Total Recovered", "Active Cases", "Critical", "Total Per 1M Pop"]
+covid19_table = {
+    "columns": column_name,
+    "country": countries,
+    "total_cases": total_cases,
+    "new_cases": new_cases,
+    "total_deaths": total_deaths,
+    "new_deaths": new_deaths,
+    "total_recovered": total_recovered,
+    "active_cases": active_cases,
+    "critical": critical,
+    "total_1M_ pop": total_per_mil_pop}
+
+countries = covid19_table["country"]
+new = covid19_table["new_cases"]
+total = covid19_table["total_cases"]
+world_total = total[countries.index("Total:")]
+
+df = pandas.read_csv('Total.csv', parse_dates = ["Date"], dayfirst = True)
+new_table = df.to_dict()
+
+search_position = covid19_table["country"].index("Total:")
+
+date = datetime.date.today()  # Testing this line
+today = str(date.today())
+new_table["Date"][len(new_table["Date"])] = today
+
+growth_yesterday = new_table["New_cases"][len(new_table["New_cases"])-1]
+if type(growth_yesterday) == str:
+        growth_yesterday = new_table["New_cases"][len(new_table["New_cases"])-1].replace(',','')
+
+growth_today = covid19_table["new_cases"][search_position].replace(',','')
+Gf = round(float(growth_today)/float(growth_yesterday),2)
+
+new_table["Total_cases"][len(new_table["Total_cases"])] = covid19_table["total_cases"][search_position]
+new_table["New_cases"][len(new_table["New_cases"])] = covid19_table["new_cases"][search_position]
+new_table["Growth_factor"][len(new_table["Growth_factor"])] = str(Gf)
+
+df = pandas.DataFrame.from_dict(new_table)
+df.to_csv("Total.csv",index=False)
+
+position_USA = covid19_table["country"].index("North America")
+total_recovered = covid19_table["total_recovered"][position_USA]
+#new_total = covid19_table["new_cases"][search_position].replace(',','')  # use this line to compare multiple countries 1/2
+total_deaths = covid19_table["total_deaths"][position_USA]
+#total_total = covid19_table["total_cases"][search_position].replace(',','')  # use this line to compare multiple countries 2/2
+
+tweet_data = {
+    "North America": {
+    "total_deaths": total_deaths,
+    "total_recovered": total_recovered
+},
+"Gf": Gf
+}
+
+#return tweet_data
+
+def tweet_stat():
+    tweet_data = scrape_web()
+with open('tweet.txt', "w",encoding='utf-8') as f:
+    f.write('Daily #COVID19 stats ('+str(date.today())+'):\n\
+    \nTotal deaths for:\nNorth America: '+str(tweet_data["North America"]["total_deaths"])+'\
+    \nTotal recovered:\nNorth America: '+str(tweet_data["North America"]["total_recovered"])+'\
+    \n\nGrowth factor: '+str(tweet_data["Gf"])+'\
+    \n\n#quarantineandchill \n#Blu3DrÆm')
+
+with open('tweet.txt', 'r') as f:
+    api.update_status(f.read())
+
+tweet_stat()
