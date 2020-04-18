@@ -9,10 +9,11 @@ import pandas
 import datetime
 import tweepy
 
-consumer_key = 'JLbLzvsmopKP1eGxUDolxu8dJ'
-consumer_secret = 'w6f9pAH7xVowNelaVCniZl7AqMebxUQRpn56iy9E28e7haUMCE'
-access_token = '1181968357936910336-OGWnWKL4JYhEwQXPbexoQRgquA77lZ'
-access_token_secret = 'kUgXOc4l9iaQ5eHW4wc5DdcckDBqjlvp584C3uxmlqrWi'
+# Set up and insert your own Twitter APIs. Available at https://developer.twitter.com/en/apps
+consumer_key = '...'
+consumer_secret = '...'
+access_token = '...'
+access_token_secret = '...'
 
 def OAuth():
     try:
