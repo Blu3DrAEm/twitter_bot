@@ -9,11 +9,10 @@ import pandas
 import datetime
 import tweepy
 
-# You will ned to get your own API keys from https://developer.twitter.com/en/apps
-consumer_key = ‘…’
-consumer_secret = ‘…’
-access_token = ‘…'
-access_token_secret = ‘…’
+consumer_key = 'JLbLzvsmopKP1eGxUDolxu8dJ'
+consumer_secret = 'w6f9pAH7xVowNelaVCniZl7AqMebxUQRpn56iy9E28e7haUMCE'
+access_token = '1181968357936910336-OGWnWKL4JYhEwQXPbexoQRgquA77lZ'
+access_token_secret = 'kUgXOc4l9iaQ5eHW4wc5DdcckDBqjlvp584C3uxmlqrWi'
 
 def OAuth():
     try:
@@ -117,15 +116,15 @@ df = pandas.DataFrame.from_dict(new_table)
 df.to_csv("Total.csv",index=False)
 
 position_USA = covid19_table["country"].index("North America")
-new_USA = covid19_table["new_cases"][position_USA]
+total_recovered = covid19_table["total_recovered"][position_USA]
 #new_total = covid19_table["new_cases"][search_position].replace(',','')  # use this line to compare multiple countries 1/2
-total_USA = covid19_table["total_cases"][position_USA]
+total_deaths = covid19_table["total_deaths"][position_USA]
 #total_total = covid19_table["total_cases"][search_position].replace(',','')  # use this line to compare multiple countries 2/2
 
 tweet_data = {
-    "USA": {
-    "Total": total_USA,
-    "New": new_USA
+    "North America": {
+    "total_deaths": total_deaths,
+    "total_recovered": total_recovered
 },
 "Gf": Gf
 }
@@ -135,10 +134,11 @@ tweet_data = {
 def tweet_stat():
     tweet_data = scrape_web()
 with open('tweet.txt', "w",encoding='utf-8') as f:
-    f.write('#COVID19 stats '+str(date.today())+':\n\
-    \nTotal cases for:\nUSA: '+str(tweet_data["USA"]["Total"])+' ('+str(tweet_data["USA"]["New"])+')'+'\
+    f.write('Daily #COVID19 stats ('+str(date.today())+'):\n\
+    \nTotal deaths for:\nNorth America: '+str(tweet_data["North America"]["total_deaths"])+'\
+    \nTotal recovered:\nNorth America: '+str(tweet_data["North America"]["total_recovered"])+'\
     \n\nGrowth factor: '+str(tweet_data["Gf"])+'\
-    \n\n#CoronaVirusstats \n#CoronaVirusUSA \n#Blu3DrÆm')
+    \n\n#quarentineandchill \n#Blu3DrÆm')
 
 with open('tweet.txt', 'r') as f:
     api.update_status(f.read())
